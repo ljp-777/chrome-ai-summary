@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body { max-width: 520px; margin: 24px auto; padding: 0 16px; font: 14px system-ui, sans-serif; }
+    h1 { font-size: 18px; margin-bottom: 16px; }
+    label { display: block; margin: 12px 0 4px; font-weight: 500; }
+    input, textarea { width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px; }
+    textarea { min-height: 72px; resize: vertical; }
+    button { margin-top: 16px; padding: 8px 20px; background: #1a73e8; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    #status { margin-top: 8px; color: #188038; font-size: 13px; }
+    .hint { font-size: 12px; color: #5f6368; margin-top: 2px; }
+  </style>
+</head>
+<body>
+  <h1>API 配置</h1>
+  <label>API Key</label>
+  <input type="password" id="apiKey" autocomplete="off" />
+  <p class="hint">支持 OpenAI 及兼容接口（DeepSeek、通义、Moonshot 等）</p>
+  <label>API Base URL</label>
+  <input type="url" id="apiBase" placeholder="https://api.openai.com/v1" />
+  <label>模型</label>
+  <input type="text" id="model" placeholder="gpt-4o-mini" />
+  <label>系统提示词</label>
+  <textarea id="systemPrompt"></textarea>
+  <button id="save">保存</button>
+  <div id="status"></div>
+  <script src="options.js"></script>
+</body>
+</html>

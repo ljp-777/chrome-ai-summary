@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI 页面总结 - 隐私政策</title>
+  <style>
+    body { max-width: 720px; margin: 40px auto; padding: 0 20px; font: 15px/1.7 system-ui, sans-serif; color: #202124; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; margin-top: 28px; }
+    p, li { color: #3c4043; }
+    .updated { color: #5f6368; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <h1>AI 页面总结 隐私政策</h1>
+  <p class="updated">最后更新：2026-06-03</p>
+
+  <p>「AI 页面总结」（以下简称「本扩展」）尊重您的隐私。本政策说明本扩展如何处理信息。</p>
+
+  <h2>1. 我们不运营后端服务器</h2>
+  <p>本扩展不在开发者服务器上存储、处理或传输您的数据。所有总结请求由您的浏览器直接发送至<strong>您自行配置的 AI API 地址</strong>（如 OpenAI、DeepSeek、火山方舟等）。</p>
+
+  <h2>2. 本扩展可能访问的数据</h2>
+  <ul>
+    <li><strong>页面内容</strong>：仅在您主动触发「总结当前页面」或「总结选中文本」时，读取相应文字。</li>
+    <li><strong>剪贴板</strong>：仅在您主动粘贴、总结剪贴板或使用相关功能时读取，不会后台持续监听。</li>
+    <li><strong>API 配置</strong>：API Key、模型名等保存在 Chrome 本地/同步存储（<code>chrome.storage.sync</code>）中。</li>
+  </ul>
+
+  <h2>3. 数据去向</h2>
+  <ul>
+    <li>您选中的文字或页面正文会作为请求内容发送到<strong>您配置的第三方 AI 服务</strong>。</li>
+    <li>该第三方服务的隐私政策由对应服务商负责，请自行查阅。</li>
+    <li>开发者无法访问您的 API Key 或总结内容。</li>
+  </ul>
+
+  <h2>4. 我们不收集的内容</h2>
+  <ul>
+    <li>不收集浏览历史、账号信息、设备标识</li>
+    <li>不使用分析/追踪 SDK</li>
+    <li>不向开发者服务器上传任何用户数据</li>
+  </ul>
+
+  <h2>5. 权限说明</h2>
+  <ul>
+    <li><code>storage</code>：保存 API 配置</li>
+    <li><code>activeTab</code> / <code>scripting</code>：在当前页面注入总结面板</li>
+    <li><code>contextMenus</code>：右键菜单快捷入口</li>
+    <li><code>clipboardRead</code>：读取您主动总结的剪贴板文字</li>
+    <li><code>&lt;all_urls&gt;</code>：在任意网页提供划词总结（除 Chrome 限制页面外）</li>
+  </ul>
+
+  <h2>6. 数据删除</h2>
+  <p>卸载扩展或在选项页清除配置即可删除本地保存的 API Key 与设置。</p>
+
+  <h2>7. 政策变更</h2>
+  <p>如有更新，将在本项目仓库中修订本页面。</p>
+
+  <h2>8. 联系方式</h2>
+  <p>如有疑问，请通过 GitHub Issues 联系：<a href="https://github.com/ljp-777/chrome-ai-summary/issues">项目 Issues</a></p>
+</body>
+</html>

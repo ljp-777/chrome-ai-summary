@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "AI 页面总结",
+  "version": "1.0.0",
+  "description": "划词调用 AI 总结选中内容或整页",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage", "activeTab", "scripting", "contextMenus", "clipboardRead"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "src/background/background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "src/content/md.js",
+        "src/content/loading-game.js",
+        "src/content/content.js"
+      ],
+      "css": ["src/content/content.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "AI 页面总结",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_page": "src/options/options.html"
+}
