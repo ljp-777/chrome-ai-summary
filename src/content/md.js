@@ -14,25 +14,78 @@ function inlineMd(s) {
     );
 }
 
+const BULLET = "[-*+\\uFF0D\\u2022\\u00B7]";
+
+function parseListLine(raw) {
+  const m = raw.match(new RegExp(`^(\\s*)(${BULLET}|\\d+\\.)\\s+(.+)$`));
+  if (!m) return null;
+  const indent = m[1].replace(/\t/g, "  ").length;
+  const ordered = /^\d+\.$/.test(m[2]);
+  return { indent, ordered, content: m[3].trimEnd() };
+}
+
+function buildListTree(flat) {
+  const root = { children: [] };
+  const stack = [{ indent: -1, node: root }];
+  for (const item of flat) {
+    const node = { content: item.content, ordered: item.ordered, children: [] };
+    while (stack.length > 1 && item.indent <= stack[stack.length - 1].indent) stack.pop();
+    stack[stack.length - 1].node.children.push(node);
+    stack.push({ indent: item.indent, node });
+  }
+  return root.children;
+}
+
+function renderListNodes(nodes) {
+  if (!nodes.length) return "";
+  let html = "";
+  let i = 0;
+  while (i < nodes.length) {
+    const tag = nodes[i].ordered ? "ol" : "ul";
+    html += `<${tag}>`;
+    while (i < nodes.length && nodes[i].ordered === (tag === "ol")) {
+      const n = nodes[i];
+      html += `<li>${inlineMd(escapeHtml(n.content))}`;
+      if (n.children.length) html += renderListNodes(n.children);
+      html += "</li>";
+      i++;
+    }
+    html += `</${tag}>`;
+  }
+  return html;
+}
+
+function collectListLines(lines, start) {
+  const items = [];
+  let i = start;
+  while (i < lines.length) {
+    const raw = lines[i];
+    if (!raw.trim()) {
+      if (items.length && i + 1 < lines.length && parseListLine(lines[i + 1])) {
+        i++;
+        continue;
+      }
+      break;
+    }
+    const item = parseListLine(raw);
+    if (!item) break;
+    if (items.length && item.indent < items[0].indent) break;
+    items.push(item);
+    i++;
+  }
+  return { items, next: i };
+}
+
 function renderMarkdown(src) {
   const lines = src.replace(/\r\n/g, "\n").split("\n");
   const out = [];
   let inCode = false;
   let code = [];
-  let list = null;
 
-  const flushList = () => {
-    if (!list) return;
-    out.push(`<${list.tag}>`);
-    list.items.forEach((item) => out.push(`<li>${inlineMd(escapeHtml(item))}</li>`));
-    out.push(`</${list.tag}>`);
-    list = null;
-  };
-
-  for (const raw of lines) {
+  for (let li = 0; li < lines.length; li++) {
+    const raw = lines[li];
     const line = raw.trimEnd();
     if (line.startsWith("```")) {
-      flushList();
       if (!inCode) {
         inCode = true;
         code = [];
@@ -47,50 +100,31 @@ function renderMarkdown(src) {
       continue;
     }
     const t = line.trim();
-    if (!t) {
-      flushList();
-      continue;
-    }
+    if (!t) continue;
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) {
-      flushList();
       out.push("<hr>");
       continue;
     }
     const hm = t.match(/^(#{1,6})\s+(.+)$/);
     if (hm) {
-      flushList();
       const lv = hm[1].length;
       out.push(`<h${lv}>${inlineMd(escapeHtml(hm[2]))}</h${lv}>`);
       continue;
     }
     const bq = t.match(/^>\s?(.+)$/);
     if (bq) {
-      flushList();
       out.push(`<blockquote>${inlineMd(escapeHtml(bq[1]))}</blockquote>`);
       continue;
     }
-    const ul = t.match(/^[-*+]\s+(.+)$/);
-    if (ul) {
-      if (!list || list.tag !== "ul") {
-        flushList();
-        list = { tag: "ul", items: [] };
-      }
-      list.items.push(ul[1]);
+    const listItem = parseListLine(raw);
+    if (listItem) {
+      const { items, next } = collectListLines(lines, li);
+      out.push(renderListNodes(buildListTree(items)));
+      li = next - 1;
       continue;
     }
-    const ol = t.match(/^\d+\.\s+(.+)$/);
-    if (ol) {
-      if (!list || list.tag !== "ol") {
-        flushList();
-        list = { tag: "ol", items: [] };
-      }
-      list.items.push(ol[1]);
-      continue;
-    }
-    flushList();
     out.push(`<p>${inlineMd(escapeHtml(t))}</p>`);
   }
-  flushList();
   if (inCode) out.push(`<pre><code>${escapeHtml(code.join("\n"))}</code></pre>`);
   return out.join("");
 }
