@@ -437,11 +437,11 @@
 #ai-summary-panel .ai-summary-md ul,
 #ai-summary-panel .ai-summary-md ol {
   margin: 6px 0;
-  padding-left: 20px;
+  padding-left: 1.5em;
 }
-#ai-summary-panel .ai-summary-md ul { list-style-type: disc; }
-#ai-summary-panel .ai-summary-md ul ul { list-style-type: circle; }
-#ai-summary-panel .ai-summary-md ol { list-style-type: decimal; }
+#ai-summary-panel .ai-summary-md ul { list-style: disc outside; }
+#ai-summary-panel .ai-summary-md ul ul { list-style: circle outside; }
+#ai-summary-panel .ai-summary-md ol { list-style: decimal outside; }
 #ai-summary-panel .ai-summary-md li {
   display: list-item;
   margin: 2px 0;

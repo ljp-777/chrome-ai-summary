@@ -3,6 +3,7 @@ $out = Join-Path $root "chrome-ai-summary.zip"
 $files = @(
   "manifest.json",
   "icons",
+  "vendor",
   "src"
 )
 if (Test-Path $out) { Remove-Item $out -Force }

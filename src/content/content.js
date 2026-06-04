@@ -1,3 +1,4 @@
+const PANEL_HOST_ID = "ai-summary-panel-host";
 const PANEL_ID = "ai-summary-panel";
 const BTN_ID = "ai-summary-float-btn";
 const MODES = [
@@ -11,6 +12,11 @@ let lastSourceText = "";
 let lastMode = "brief";
 let lastResult = "";
 let viewMode = "preview";
+let panelHost = null;
+
+function getPanel() {
+  return panelHost?.shadowRoot?.getElementById(PANEL_ID) ?? null;
+}
 
 function getSelectedText() {
   const sel = window.getSelection()?.toString().trim();
@@ -28,9 +34,9 @@ document.addEventListener("mousedown", onMouseDown);
 chrome.runtime.onMessage.addListener(onMessage);
 
 function onMouseDown(e) {
-  const panel = document.getElementById(PANEL_ID);
+  const host = document.getElementById(PANEL_HOST_ID);
   const btn = document.getElementById(BTN_ID);
-  if (panel?.contains(e.target) || btn?.contains(e.target)) return;
+  if (host?.shadowRoot?.contains(e.target) || btn?.contains(e.target)) return;
   removeFloatBtn();
 }
 
@@ -117,16 +123,26 @@ function extractPageText() {
   const clone = document.body.cloneNode(true);
   clone
     .querySelectorAll(
-      "script,style,noscript,nav,footer,header,aside,#" + PANEL_ID + ",#" + BTN_ID
+      "script,style,noscript,nav,footer,header,aside,#" + PANEL_HOST_ID + ",#" + BTN_ID
     )
     .forEach((el) => el.remove());
   return (clone.innerText || "").replace(/\s+/g, " ").trim().slice(0, 15000);
 }
 
 function ensurePanel() {
-  let panel = document.getElementById(PANEL_ID);
-  if (panel) return panel;
-  panel = document.createElement("div");
+  const existing = getPanel();
+  if (existing) return existing;
+
+  panelHost = document.createElement("div");
+  panelHost.id = PANEL_HOST_ID;
+  const shadow = panelHost.attachShadow({ mode: "open" });
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = chrome.runtime.getURL("src/content/content.css");
+  shadow.appendChild(link);
+
+  const panel = document.createElement("div");
   panel.id = PANEL_ID;
   panel.innerHTML = `
     <div class="ai-summary-header">
@@ -146,7 +162,8 @@ function ensurePanel() {
     stopLoadingGame();
     lastSourceText = "";
     lastResult = "";
-    panel.remove();
+    panelHost?.remove();
+    panelHost = null;
   });
   panel.querySelector(".ai-summary-view").addEventListener("click", () => {
     viewMode = viewMode === "preview" ? "source" : "preview";
@@ -163,7 +180,8 @@ function ensurePanel() {
     setTimeout(() => { btn.textContent = "复制"; }, 1500);
   });
   panel.querySelector(".ai-summary-reset").addEventListener("click", () => resetPanel());
-  document.body.appendChild(panel);
+  shadow.appendChild(panel);
+  document.body.appendChild(panelHost);
   return panel;
 }
 
@@ -234,7 +252,7 @@ async function onHomeSummarize(panel) {
 
 function resetPanel() {
   removeFloatBtn();
-  const panel = document.getElementById(PANEL_ID);
+  const panel = getPanel();
   if (panel) renderHome(panel);
 }
 
@@ -277,11 +295,20 @@ function showPanel({ loading, text, error, mode = lastMode }) {
   }
 }
 
+function normalizeMd(text) {
+  return text
+    .replace(/\r\n?/g, "\n")
+    .replace(/([。；;!?])\s*([-*+\uFF0D\u2022\u00B7])\s+/g, "$1\n$2 ");
+}
+
+marked.setOptions({ breaks: true, gfm: true });
+
 function renderResult(body, text) {
   if (viewMode === "source") {
     body.innerHTML = `<div class="ai-summary-text ai-summary-source">${escapeHtml(text)}</div>`;
   } else {
-    body.innerHTML = `<div class="ai-summary-md">${renderMarkdown(text)}</div>`;
+    const html = marked.parse(normalizeMd(text));
+    body.innerHTML = `<div class="ai-summary-md">${DOMPurify.sanitize(html)}</div>`;
   }
 }
 
