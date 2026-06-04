@@ -76,8 +76,14 @@ function collectListLines(lines, start) {
   return { items, next: i };
 }
 
+function normalizeMdLists(src) {
+  return src
+    .replace(/\r\n?/g, "\n")
+    .replace(/([。；;!?])\s*([-*+\uFF0D\u2022\u00B7])\s+/g, "$1\n$2 ");
+}
+
 function renderMarkdown(src) {
-  const lines = src.replace(/\r\n/g, "\n").split("\n");
+  const lines = normalizeMdLists(src).split("\n");
   const out = [];
   let inCode = false;
   let code = [];
